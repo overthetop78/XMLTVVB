@@ -28,10 +28,10 @@ Friend Module Mod_XML
     Sub CreationChannelXML(NomChaine As String, IMGChaine As String, GrabName As String)
         
         Dim DocChan As XmlElement = XmlDoc.CreateElement("channel")
-        DocChan.SetAttribute("id", ChannelName)
+        DocChan.SetAttribute("id", NomChaine)
         DocRoot.PrependChild(DocChan)
         Dim ChanName As XmlNode = XmlDoc.CreateNode(XmlNodeType.Element, "display-name", Nothing)
-        ChanName.InnerText = ChannelName
+        ChanName.InnerText = NomChaine
         DocChan.AppendChild(ChanName)
         Dim ChanIcon As XmlNode = XmlDoc.CreateNode(XmlNodeType.Element, "icon", Nothing)
         Dim Attri As XmlAttribute = XmlDoc.CreateAttribute("src")

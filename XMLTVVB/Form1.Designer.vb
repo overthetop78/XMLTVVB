@@ -22,20 +22,10 @@ Partial Class Form1
     'Ne la modifiez pas à l'aide de l'éditeur de code.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.CreerXML_btn = New System.Windows.Forms.Button()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.BtnGrabCanalsat = New System.Windows.Forms.Button()
-        Me.BtnGrabEPG = New System.Windows.Forms.Button()
+        Me.BtnGrabLeFigaro = New System.Windows.Forms.Button()
         Me.SuspendLayout()
-        '
-        'CreerXML_btn
-        '
-        Me.CreerXML_btn.Location = New System.Drawing.Point(924, 1011)
-        Me.CreerXML_btn.Name = "CreerXML_btn"
-        Me.CreerXML_btn.Size = New System.Drawing.Size(210, 76)
-        Me.CreerXML_btn.TabIndex = 0
-        Me.CreerXML_btn.Text = "Creer XML"
-        Me.CreerXML_btn.UseVisualStyleBackColor = True
         '
         'TextBox1
         '
@@ -57,33 +47,30 @@ Partial Class Form1
         Me.BtnGrabCanalsat.Text = "Grabber Canalsat"
         Me.BtnGrabCanalsat.UseVisualStyleBackColor = True
         '
-        'BtnGrabEPG
+        'BtnGrabLeFigaro
         '
-        Me.BtnGrabEPG.Location = New System.Drawing.Point(22, 1011)
-        Me.BtnGrabEPG.Name = "BtnGrabEPG"
-        Me.BtnGrabEPG.Size = New System.Drawing.Size(210, 76)
-        Me.BtnGrabEPG.TabIndex = 3
-        Me.BtnGrabEPG.Text = "Grabber EPG"
-        Me.BtnGrabEPG.UseVisualStyleBackColor = True
+        Me.BtnGrabLeFigaro.Location = New System.Drawing.Point(22, 464)
+        Me.BtnGrabLeFigaro.Name = "BtnGrabLeFigaro"
+        Me.BtnGrabLeFigaro.Size = New System.Drawing.Size(193, 34)
+        Me.BtnGrabLeFigaro.TabIndex = 3
+        Me.BtnGrabLeFigaro.Text = "Grabber Le Figaro"
+        Me.BtnGrabLeFigaro.UseVisualStyleBackColor = True
         '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(9.0!, 20.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1459, 1130)
-        Me.Controls.Add(Me.BtnGrabEPG)
+        Me.Controls.Add(Me.BtnGrabLeFigaro)
         Me.Controls.Add(Me.BtnGrabCanalsat)
         Me.Controls.Add(Me.TextBox1)
-        Me.Controls.Add(Me.CreerXML_btn)
         Me.Name = "Form1"
         Me.Text = "Form1"
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
     End Sub
-
-    Friend WithEvents CreerXML_btn As Button
     Friend WithEvents TextBox1 As TextBox
     Friend WithEvents BtnGrabCanalsat As Button
-    Friend WithEvents BtnGrabEPG As Button
+    Friend WithEvents BtnGrabLeFigaro As Button
 End Class

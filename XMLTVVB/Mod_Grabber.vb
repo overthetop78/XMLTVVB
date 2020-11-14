@@ -4,6 +4,9 @@ Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports System.Net
 Imports System.Windows.Forms.Application
+Imports HtmlAgilityPack
+Imports System.Globalization
+
 
 Module Mod_Grabber
     'Grabber 
@@ -35,7 +38,7 @@ Module Mod_Grabber
         'Permet de grabber toutes les chaines existantes dans le EPG Canal
         Mod_XML.CreationEnteteXML()
         Try
-            'de 0 à 1000 pour voir
+            'de 1 à 1000 pour voir
             For i = 1 To 1000
                 ChannelName = Nothing
                 EPGLogoChannel = Nothing
@@ -85,7 +88,7 @@ Module Mod_Grabber
                                         If NumRMCSport = 0 Then NumRMCSport = 5 Else NumRMCSport = NumRMCSport + 1
                                         ChannelName = $"{ChannelName} Live {NumRMCSport}"
                                     End If
-                                    If ChannelName.Contains("F3 ") Then Replace(ChannelName, "F3 ", "FRANCE 3 ")
+                                    If ChannelName.Contains("F3 ") Then ChannelName = Replace(ChannelName, "F3 ", "FRANCE 3 ")
                                     Form1.TextBox1.Text = $"{vbCrLf}Grab de la chaine: {ChannelName} ({i}) {vbCrLf}{vbCrLf}{Form1.TextBox1.Text}"
                                     DoEvents()
                                     Exit Try
@@ -306,7 +309,7 @@ Module Mod_Grabber
                         EPGLang = ""
                         EPGEpisode = ""
                         EPGProgRate = "csa"
-                        EPGProgRateVal = ValeurRating.ToString
+                        EPGProgRateVal = CSA(ValeurRating.ToString)
                         EPGAudioChannel = ""
                         Mod_XML.CreationEPGChannelXML("Canalsat", ChannelName, EPGStartTime, EPGEndTime, UTC2, EPGLang, EPGTitle, EPGSubTitle, EPGSummary, EPGGenre, EPGEpisode, EPGDuree, EPGURLImage, EPGAudioChannel, EPGProgRate, EPGProgRateVal)
                         Form1.TextBox1.Text = $".{Form1.TextBox1.Text}"
@@ -324,8 +327,6 @@ Module Mod_Grabber
             Exit Try
         End Try
     End Sub
-
-
 
     Function CSA(Valeur As Integer) As String
         Select Case Valeur
@@ -345,5 +346,97 @@ Module Mod_Grabber
         End Select
     End Function
 
+    Sub LeFigaroGrabChannel()
+        'Grab de la liste de chaines du figaro 
+        Dim Web As HtmlWeb = New HtmlWeb
+        Dim Doc As HtmlDocument = Web.Load("https://tvmag.lefigaro.fr/programme-tv/TNT/guide-tele.html")
+        Dim DocParsed As String = Doc.ParsedText
+        Dim liste As New Dictionary(Of String, String)
+        Mod_XML.CreationEnteteXML()
+        For Each link In Doc.DocumentNode.SelectNodes("//a[@href]")
+
+            Dim att As HtmlAttribute = link.Attributes("href")
+            If att.Value.Contains("a") And Not att.Value.Contains("#") Then
+                Dim Valeur As String = att.Value
+                Dim Texte As String = link.InnerText
+                If Valeur.Contains("https://tvmag.lefigaro.fr/programme-tv/chaine/") Then
+                    liste.Add(Valeur, Texte)
+                    EPGChannelName = Texte
+                    'Creer le fichier XML Liste des chaines
+                    Mod_XML.CreationChannelXML(EPGChannelName, "", "LeFigaro")
+                End If
+            End If
+        Next
+
+        'On définit le jour actuel
+        Dim JourActuel As String = Today.ToString("yyyyMMdd")
+        Dim JourActuelDate As Date = Today
+        'On a la liste des chaines , on a plus qu'a grabber les infos
+        For i = 0 To liste.Count - 1
+            'recuperation de l'URL
+            Dim URLChaine As String = liste.Keys(i)
+            'Recupération du nom de la chaine
+            ChannelName = liste.Values(i)
+            Form1.TextBox1.Text = $"{vbCrLf}{ChannelName}{vbCrLf}{Form1.TextBox1.Text}"
+            DoEvents()
+            Dim ii As Integer = 1
+            Dim Jour As String = JourActuelDate.ToString
+            Dim EPGExist As Boolean = True
+            While EPGExist = True
+                Try
+                    'on va faire jour par jour en commençant par aujourd'hui
+                    'en testant si le jour existe
+                    Dim JourStr As String = Date.Parse(Jour).ToString("yyyyMMdd")
+                    Dim URLChaineJour As String = $"{URLChaine}?date={JourStr}"
+                    Doc = Web.Load(URLChaineJour)
+                    Form1.TextBox1.Text = $"{ii}{Form1.TextBox1.Text}"
+                    DoEvents()
+                    For Each link In Doc.DocumentNode.SelectNodes("//section/div")
+                        Try
+
+                            Dim Node As HtmlNodeCollection = link.ChildNodes
+                            Dim InfoNode As HtmlNodeCollection = Node(1).ChildNodes
+                            Dim Heure As String = InfoNode(1).InnerText
+                            Dim Duree As String = InfoNode(3).InnerText
+                            Dim Categorie As String = InfoNode(5).InnerText
+                            Dim Titre As String = Trim(Replace(InfoNode(7).InnerText, vbLf, ""))
+                            If Titre.Contains("Bouquets TV") Then
+                                If ii = 15 Then
+                                    Exit While
+                                Else
+                                    Exit For
+                                End If
+                            End If
+                            EPGChannelName = ChannelName
+                            EPGDuree = Replace(Duree, "mn", "")
+                            EPGGenre = Categorie
+                            EPGTitle = Titre
+                            Dim JourDate As Double = Date.Parse(Jour).ToOADate
+                            'Si Heure = 00:00 
+
+                            Dim StartTime As Double = (Date.Parse(Heure).ToOADate - Today.ToOADate) + JourDate
+                            EPGStartTime = Date.FromOADate(StartTime).ToString("yyyyMMddHHmmss")
+                            Dim EndTime As Double = Date.FromOADate(StartTime).AddMinutes(EPGDuree).ToOADate
+                            EPGEndTime = Date.FromOADate(EndTime).ToString("yyyyMMddHHmmss")
+                            Mod_XML.CreationEPGChannelXML("LeFigaro", EPGChannelName, EPGStartTime, EPGEndTime, UTC2, "", EPGTitle, "", "", EPGGenre, "", EPGDuree, "", "", "", "")
+                            Form1.TextBox1.Text = $".{Form1.TextBox1.Text}"
+                            DoEvents()
+                        Catch ex As Exception
+
+                        End Try
+                    Next
+                    Jour = Date.Parse(Jour).AddDays(1).ToString
+                    ii = ii + 1
+                Catch ex As Exception
+                    EPGExist = False
+                    MsgBox(ex.Message + vbCrLf + ex.StackTrace, vbApplicationModal)
+                    'Exit While
+                End Try
+            End While
+        Next
+
+
+
+    End Sub
 
 End Module
